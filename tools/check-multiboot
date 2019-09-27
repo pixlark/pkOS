@@ -1,0 +1,7 @@
+#!/usr/bin/env fish
+
+if grub-file --is-x86-multiboot $argv[1]
+else
+	echo "Error: os.bin has invalid multiboot header"
+	exit 1
+end
