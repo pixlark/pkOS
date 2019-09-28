@@ -31,6 +31,7 @@ def main():
 		"boot",
 		"kernel/kernel",
 		"kernel/tty",
+		"libk/string",
 	]
 	for n in names:
 		make_obj(n)

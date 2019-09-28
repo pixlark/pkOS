@@ -2,15 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-size_t string_length(const char* str)
-{
-	size_t n = 0;
-	while (*str != '\0') {
-		str++;
-		n++;
-	}
-	return n;
-}
+#include <libk/string.h>
 
 typedef enum {
 	VGA_BLACK = 0,
