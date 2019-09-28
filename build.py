@@ -34,12 +34,14 @@ def main():
 	]
 	for n in names:
 		make_obj(n)
+		
 	# 2: Link .bin file
 	objects = ' '.join(map(lambda n: "build/{0}.o".format(n), names))
 	do("i686-elf-gcc -T src/linker.ld {0} -o build/pkos.bin -ffreestanding -O2 -nostdlib -lgcc"
 	   .format(objects))
 	## 2.5: Check that multiboot is valid
 	do("tools/check-multiboot build/pkos.bin")
+	
 	# 3: Make iso
 	do("mkdir -p build/isodir/boot/grub")
 	do("cp build/pkos.bin build/isodir/boot/")
