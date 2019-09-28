@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys
+import os
 import os.path
 from scripter import *
 
@@ -7,7 +9,9 @@ def do(cmd):
 	print(cmd)
 	res = run(cmd)
 	if res.code != 0:
-		print("Ran into error! Stderr:\n{0}".format(res.err))
+		print("Ran into error! Stderr:")
+		with os.fdopen(sys.stdout.fileno(), 'wb') as stdout:
+			stdout.write(res.rawerr)
 		exit(1)
 
 def make_obj(name):
@@ -21,7 +25,7 @@ def make_obj(name):
 		sourceType = ".s"
 
 	# Build object
-	cmd = "i686-elf-gcc -c src/{0}{1} -o build/{0}.o -std=c99 -ffreestanding -O2 -Wall -Wextra -nostdlib -Iinclude" \
+	cmd = "i686-elf-gcc -fdiagnostics-color=always -c src/{0}{1} -o build/{0}.o -std=c99 -ffreestanding -O2 -Wall -Wextra -nostdlib -Iinclude" \
 		.format(name, sourceType)
 	do(cmd)
 

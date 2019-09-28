@@ -26,21 +26,25 @@ typedef enum {
 const size_t VGA_WIDTH  = 80;
 const size_t VGA_HEIGHT = 25;
 
+typedef uint8_t Color_Tuple;
+
 typedef struct {
 	size_t row;
 	size_t col;
-	uint8_t color;
+	Color_Tuple color;
 	uint16_t* buffer;
 } Terminal;
 
 Terminal terminal;
 
-uint8_t vga_color(VGA_Color fg, VGA_Color bg)
+Color_Tuple vga_color(VGA_Color fg, VGA_Color bg)
 {
 	return fg | (bg << 4);
 }
 
-uint16_t vga_char(unsigned char c, uint8_t color)
+typedef uint16_t VGA_Char;
+
+VGA_Char vga_char(unsigned char c, Color_Tuple color)
 {
 	return ((uint16_t) c) | ((uint16_t) color << 8);
 }
@@ -59,6 +63,33 @@ void terminal_init()
 	}
 }
 
+static void terminal_set(VGA_Char c, size_t row, size_t col)
+{
+	terminal.buffer[row * VGA_WIDTH + col] = c;
+}
+
+static VGA_Char terminal_get(size_t row, size_t col)
+{
+	return terminal.buffer[row * VGA_WIDTH + col];
+}
+
+static void terminal_scroll()
+{
+	if (terminal.row == VGA_HEIGHT - 1) {
+		// Scroll everything up
+		for (size_t y = 1; y < VGA_HEIGHT; y++) {
+			for (size_t x = 0; x < VGA_WIDTH; x++) {
+				terminal_set(terminal_get(y, x), y - 1, x);
+			}
+		}
+		for (size_t x = 0; x < VGA_WIDTH; x++) {
+			terminal_set(vga_char(' ', vga_color(VGA_BLACK, VGA_BLACK)), VGA_HEIGHT - 1, x);
+		}
+	} else {
+		terminal.row++;
+	}
+}
+
 void terminal_write_char(unsigned char c)
 {
 	switch (c) {
@@ -67,15 +98,14 @@ void terminal_write_char(unsigned char c)
 	} break;
 	case '\n': {
 		terminal.col = 0;
-		terminal.row++;
+		terminal_scroll();
 	} break;
 	default: {
-		terminal.buffer[terminal.row * VGA_WIDTH + terminal.col] =
-			vga_char(c, terminal.color);
+		terminal_set(vga_char(c, terminal.color), terminal.row, terminal.col);
 		terminal.col++;
 		if (terminal.col >= VGA_WIDTH) {
 			terminal.col = 0;
-			terminal.row++;
+			terminal_scroll();
 		}
 	} break;
 	}
